@@ -1,24 +1,23 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy.typing import ArrayLike
 from typing import Tuple, List
 from .utils import check_rgb_image, crop_mask, show_images
 
 
-def get_rgb_histogram(img: ArrayLike, show_steps: bool = False) -> ArrayLike:
+def get_rgb_histogram(img: np.ndarray, show_steps: bool = False) -> np.ndarray:
     """Create a histogram of the image for each color channel.
 
     Parameters
     ----------
-    img : ArrayLike
+    img : np.ndarray
         The image to create the histogram of.
     show_steps : bool, optional
         If True, show the steps of the conversion. The default is False.
 
     Returns
     -------
-    ArrayLike
+    np.ndarray
         The histogram of the image.
     """
     if not isinstance(show_steps, bool):
@@ -63,19 +62,19 @@ def get_rgb_histogram(img: ArrayLike, show_steps: bool = False) -> ArrayLike:
     return rgb_hist
 
 
-def find_edges(image: ArrayLike, show_steps: bool = True) -> ArrayLike:
+def find_edges(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
     """Detects edges in the image using kernel convolution.
 
     Parameters
     ----------
-    image : ArrayLike
+    image : np.ndarray
         The image to detect the edges in.
     show_steps : bool, optional
         If True, show the steps of the conversion. The default is True.
 
     Returns
     -------
-    ArrayLike
+    np.ndarray
         The edge detected image.
     """
     if not isinstance(show_steps, bool):
@@ -102,13 +101,13 @@ def find_edges(image: ArrayLike, show_steps: bool = True) -> ArrayLike:
 
 
 def find_components(
-    image: ArrayLike, min_size: int, max_size: int, show_steps: bool = False
-) -> Tuple[ArrayLike, List[ArrayLike], ArrayLike]:
+    image: np.ndarray, min_size: int, max_size: int, show_steps: bool = False
+) -> Tuple[np.ndarray, List[np.ndarray], np.ndarray]:
     """Finds the connected components in the image.
 
     Parameters
     ----------
-    image : ArrayLike
+    image : np.ndarray
         The image to find the connected components in.
     min_size : int
         The minimum size of the connected components.
@@ -119,7 +118,7 @@ def find_components(
 
     Returns
     -------
-    Tuple[ArrayLike, List[ArrayLike], ArrayLike]
+    Tuple[np.ndarray, List[np.ndarray], np.ndarray]
         A tuple containing the image with the components marked by number,
         a list of the components and an image with all the components.
     """

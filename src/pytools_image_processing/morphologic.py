@@ -1,18 +1,85 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy.typing import ArrayLike
 from .utils import check_rgb_image, show_images
 
 
+def remap_image_intensity(
+    image: np.ndarray, range: tuple[int, int] = [0, 1], show_steps: bool = False
+) -> np.ndarray:
+    """Remap the intensity of the image to a specific range.
+
+    Remap the intensity of the image to a specific range. This is useful to
+    increase the contrast of the image while keeping relative intensities the same.
+    When the range is [0,1], the image is normalized.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The image to remap the intensity of.
+    range : tuple[int, int], optional
+        The range to remap the intensity to. The default is [0,1].
+    show_steps : bool, optional
+        If True, show the steps of the conversion. The default is False.
+
+    Returns
+    -------
+    np.ndarray
+        The image with the remapped intensity.
+
+    Raises
+    ------
+    ValueError
+        If the range is not a tuple of two integers or the image is not RGB.
+    """
+    if not isinstance(range, tuple):
+        raise ValueError("Range should be a tuple not type {}".format(type(range)))
+    if not isinstance(range[0], int) or not isinstance(range[1], int):
+        raise ValueError(
+            "Range should be a tuple of integers not type {} and {}".format(
+                type(range[0]), type(range[1])
+            )
+        )
+    if not isinstance(show_steps, bool):
+        raise ValueError(
+            "show_steps should be a boolean not type {}".format(type(show_steps))
+        )
+    if not isinstance(image, np.ndarray):
+        raise ValueError(
+            "Image should be a numpy array not type {}".format(type(image))
+        )
+
+    # Only grayscale images can be remapped
+    if not check_rgb_image(image, raise_exceptions=False):
+        raise ValueError("Image should be a grayscale image")
+
+    # Determine the current range of the image
+    min_val = np.min(image)
+    max_val = np.max(image)
+
+    # Remap the intensity of the image
+    remapped_image = (image - min_val) / (max_val - min_val) * (range[1] - range[0])
+
+    if show_steps:
+        show_images(
+            {
+                "Original image": image,
+                "Remapped image": remapped_image,
+                "Difference between the two images": image - remapped_image,
+            }
+        )
+
+    return remapped_image
+
+
 def change_saturation(
-    image: ArrayLike, delta: int, show_steps: bool = False
-) -> ArrayLike:
+    image: np.ndarray, delta: int, show_steps: bool = False
+) -> np.ndarray:
     """Change the saturation of the image.
 
     Parameters
     ----------
-    image : ArrayLike
+    image : np.ndarray
         The image to change the saturation of.
     delta : int
         The amount to change the saturation. Positive values increase the saturation,
@@ -22,7 +89,7 @@ def change_saturation(
 
     Returns
     -------
-    ArrayLike
+    np.ndarray
         The image with the changed saturation.
 
     Raises
@@ -59,23 +126,25 @@ def change_saturation(
     rgb = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
 
     if show_steps:
-        show_images({
-            "Original image": image,
-            "Image with increased saturation": rgb,
-            "Difference between the two images": image - rgb
-        })
+        show_images(
+            {
+                "Original image": image,
+                "Image with increased saturation": rgb,
+                "Difference between the two images": image - rgb,
+            }
+        )
 
     return rgb
 
 
 def change_brightness(
-    image: ArrayLike, delta: int, show_steps: bool = False
-) -> ArrayLike:
+    image: np.ndarray, delta: int, show_steps: bool = False
+) -> np.ndarray:
     """Change the brightness of the image.
 
     Parameters
     ----------
-    image : ArrayLike
+    image : np.ndarray
         The image to change the brightness of.
     delta : int
         The amount to change the brightness. Positive values increase the brightness,
@@ -85,7 +154,7 @@ def change_brightness(
 
     Returns
     -------
-    ArrayLike
+    np.ndarray
         The image with the changed brightness.
 
     Raises
@@ -122,23 +191,25 @@ def change_brightness(
     rgb = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
 
     if show_steps:
-        show_images({
-            "Original image": image,
-            "Image with increased brightness": rgb,
-            "Difference between the two images": image - rgb
-        })
+        show_images(
+            {
+                "Original image": image,
+                "Image with increased brightness": rgb,
+                "Difference between the two images": image - rgb,
+            }
+        )
 
     return rgb
 
 
-def blur(image: ArrayLike, kernel_size: int, show_steps: bool = True) -> ArrayLike:
+def blur(image: np.ndarray, kernel_size: int, show_steps: bool = True) -> np.ndarray:
     """Blurs the image.
 
     The blurring is done using a simple average kernel.
 
     Parameters
     ----------
-    image : ArrayLike
+    image : np.ndarray
         The image to blur.
     kernel_size : int
         The size of the kernel to use for blurring.
@@ -147,7 +218,7 @@ def blur(image: ArrayLike, kernel_size: int, show_steps: bool = True) -> ArrayLi
 
     Returns
     -------
-    ArrayLike
+    np.ndarray
         The blurred image.
     """
     if not isinstance(image, np.ndarray):
@@ -169,11 +240,13 @@ def blur(image: ArrayLike, kernel_size: int, show_steps: bool = True) -> ArrayLi
     blurred_image = cv2.filter2D(image, -1, kernel)
 
     if show_steps:
-        show_images({
-            "Original image": image,
-            "Blurred image": blurred_image,
-            "Difference between the two images": image - blurred_image
-        })
+        show_images(
+            {
+                "Original image": image,
+                "Blurred image": blurred_image,
+                "Difference between the two images": image - blurred_image,
+            }
+        )
 
     return blurred_image
 
@@ -200,9 +273,7 @@ def gaussian_blur(
         The blurred image
     """
     if not isinstance(image, np.ndarray):
-        raise TypeError(
-            "Image must be a numpy array, not type {}".format(type(image))
-        )
+        raise TypeError("Image must be a numpy array, not type {}".format(type(image)))
     if not isinstance(kernel_size, tuple):
         raise TypeError(
             "Kernel size must be a tuple, not type {}".format(type(kernel_size))
@@ -214,9 +285,7 @@ def gaussian_blur(
             )
         )
     if not isinstance(sigma, int):
-        raise TypeError(
-            "Gaus sigma must be an int, not type {}".format(type(sigma))
-        )
+        raise TypeError("Gaus sigma must be an int, not type {}".format(type(sigma)))
 
     # Reduce noise using gaussian filter
     image = cv2.GaussianBlur(image, kernel_size, sigma)

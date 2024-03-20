@@ -1,7 +1,6 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy.typing import ArrayLike
 from typing import Tuple
 from scipy import fftpack
 from scipy.signal import find_peaks
@@ -9,19 +8,19 @@ from matplotlib.colors import LogNorm
 from .utils import check_rgb_image, show_images
 
 
-def rgb_to_grayscale(img: ArrayLike, show_steps: bool = False) -> ArrayLike:
+def rgb_to_grayscale(img: np.ndarray, show_steps: bool = False) -> np.ndarray:
     """Convert an RGB image to a grayscale image.
 
     Parameters
     ----------
-    img : ArrayLike
+    img : np.ndarray
         The image to convert to grayscale.
     show_steps : bool, optional
         If True, show the steps of the conversion. The default is False.
 
     Returns
     -------
-    ArrayLike
+    np.ndarray
         The grayscale image.
     """
     if not isinstance(show_steps, bool):
@@ -46,19 +45,19 @@ def rgb_to_grayscale(img: ArrayLike, show_steps: bool = False) -> ArrayLike:
     return gray_img
 
 
-def grayscale_to_binary(img: ArrayLike, show_steps: bool = False) -> ArrayLike:
+def grayscale_to_binary(img: np.ndarray, show_steps: bool = False) -> np.ndarray:
     """Convert a grayscale image to a binary image.
 
     Parameters
     ----------
-    img : ArrayLike
+    img : np.ndarray
         The image to convert to binary.
     show_steps : bool, optional
         If True, show the steps of the conversion. The default is False.
 
     Returns
     -------
-    ArrayLike
+    np.ndarray
         The binary image.
     """
     if not isinstance(show_steps, bool):
@@ -85,19 +84,19 @@ def grayscale_to_binary(img: ArrayLike, show_steps: bool = False) -> ArrayLike:
     return binary_img
 
 
-def rgb_to_binary(img: ArrayLike, show_steps: bool = False) -> ArrayLike:
+def rgb_to_binary(img: np.ndarray, show_steps: bool = False) -> np.ndarray:
     """Convert an RGB image to a binary image.
 
     Parameters
     ----------
-    img : ArrayLike
+    img : np.ndarray
         The image to convert to binary.
     show_steps : bool, optional
         If True, show the steps of the conversion. The default is False.
 
     Returns
     -------
-    ArrayLike
+    np.ndarray
         The binary image.
     """
     if not isinstance(show_steps, bool):
@@ -122,7 +121,7 @@ def rgb_to_binary(img: ArrayLike, show_steps: bool = False) -> ArrayLike:
     return binary_img
 
 
-def convert_to_fft_image(image: ArrayLike, show_steps: bool = True) -> Tuple[ArrayLike, ArrayLike, int, float]:
+def convert_to_fft_image(image: np.ndarray, show_steps: bool = True) -> Tuple[np.ndarray, np.ndarray, int, float]:
     """
     Converts the image to a fourrier transformed image.
 
@@ -133,14 +132,14 @@ def convert_to_fft_image(image: ArrayLike, show_steps: bool = True) -> Tuple[Arr
 
     Parameters
     ----------
-    image : ArrayLike
+    image : np.ndarray
         The image to convert to a fourrier transformed image.
     show_steps : bool, optional
         If True, show the steps of the conversion. The default is True.
 
     Returns
     -------
-    Tuple[ArrayLike, ArrayLike, int, float]
+    Tuple[np.ndarray, np.ndarray, int, float]
         A tuple containing the fourrier transformed image, the 1D spectrum, the dominant 
         frequency and the angle of the dominant frequency.
     """

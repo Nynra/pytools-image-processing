@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-from numpy.typing import ArrayLike
 import os
 from typing import List
 from .utils import show_images
@@ -29,7 +28,7 @@ def stack_keypoint_matching(
     """
     if not isinstance(images, list):
         raise TypeError("Images must be a list, not type {}".format(type(images)))
-    if not all(isinstance(img, ArrayLike) for img in images):
+    if not all(isinstance(img, np.ndarray) for img in images):
         raise TypeError(
             "All images must be numpy arrays, not types {}".format(
                 [type(img) for img in images]
@@ -122,7 +121,7 @@ def stack_ECC(images: List[np.ndarray], show_steps: bool = False) -> np.ndarray:
     """
     if not isinstance(images, list):
         raise TypeError("Images must be a list, not type {}".format(type(images)))
-    if not all(isinstance(img, ArrayLike) for img in images):
+    if not all(isinstance(img, np.ndarray) for img in images):
         raise TypeError(
             "All images must be numpy arrays, not types {}".format(
                 [type(img) for img in images]

@@ -1,20 +1,19 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy.typing import ArrayLike
 import os
 from typing import Tuple
 
 
 
-def show_images(images: dict[str, ArrayLike]):
+def show_images(images: dict[str, np.ndarray]):
     """Show the images in a grid.
 
     Plot the given images as subplots in a grid.
 
     Parameters
     ----------
-    images : dict[str, ArrayLike]
+    images : dict[str, np.ndarray]
         The images to show.
     """
     if not isinstance(images, dict):
@@ -48,12 +47,12 @@ def show_images(images: dict[str, ArrayLike]):
     plt.show()
 
 
-def check_rgb_image(img: ArrayLike, raise_exceptions: bool = True) -> bool:
+def check_rgb_image(img: np.ndarray, raise_exceptions: bool = True) -> bool:
     """Check if the image is an RGB image.
 
     Parameters
     ----------
-    img : ArrayLike
+    img : np.ndarray
         The image to check.
     raise_exceptions : bool, optional
         If True, raise an exception if the image is not RGB. The default is True.
@@ -88,7 +87,7 @@ def check_rgb_image(img: ArrayLike, raise_exceptions: bool = True) -> bool:
 
 def load_image(
     filename: str, in_file_dir: bool = True, show_steps: bool = False
-) -> ArrayLike:
+) -> np.ndarray:
     """Load the image using opencv.
 
     The image is loaded using opencv and converted to RGB.
@@ -104,7 +103,7 @@ def load_image(
 
     Returns
     -------
-    ArrayLike
+    np.ndarray
         The image.
 
     Raises
@@ -143,19 +142,19 @@ def load_image(
     return img
 
 
-def crop_mask(mask: ArrayLike, show_steps: bool = True) -> ArrayLike:
+def crop_mask(mask: np.ndarray, show_steps: bool = True) -> np.ndarray:
     """Crops the mask to the smallest possible size.
 
     Parameters
     ----------
-    mask : ArrayLike
+    mask : np.ndarray
         The mask to crop.
     show_steps : bool, optional
         If True, show the steps of the conversion. The default is True.
 
     Returns
     -------
-    ArrayLike
+    np.ndarray
         The cropped mask.
     """
     if not isinstance(mask, np.ndarray):
