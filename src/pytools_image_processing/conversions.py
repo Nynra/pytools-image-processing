@@ -34,7 +34,8 @@ def rgb_to_grayscale(img: np.ndarray, show_steps: bool = False) -> np.ndarray:
     check_rgb_image(img, raise_exceptions=True)
 
     # Convert the image to grayscale
-    gray_img = np.mean(img, axis=2)
+    # gray_img = np.mean(img, axis=2)
+    gray_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
     if show_steps:
         show_images({

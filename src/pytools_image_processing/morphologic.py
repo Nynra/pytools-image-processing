@@ -1,7 +1,7 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from .utils import check_rgb_image, show_images
+from .utils import check_rgb_image, show_images, check_grayscale_image
 
 
 def remap_image_intensity(
@@ -32,7 +32,7 @@ def remap_image_intensity(
     ValueError
         If the range is not a tuple of two integers or the image is not RGB.
     """
-    if not isinstance(range, tuple):
+    if not isinstance(range, (tuple, list)):
         raise ValueError("Range should be a tuple not type {}".format(type(range)))
     if not isinstance(range[0], int) or not isinstance(range[1], int):
         raise ValueError(
@@ -50,15 +50,10 @@ def remap_image_intensity(
         )
 
     # Only grayscale images can be remapped
-    if not check_rgb_image(image, raise_exceptions=False):
-        raise ValueError("Image should be a grayscale image")
+    check_grayscale_image(image, raise_exceptions=True)
 
-    # Determine the current range of the image
-    min_val = np.min(image)
-    max_val = np.max(image)
-
-    # Remap the intensity of the image
-    remapped_image = (image - min_val) / (max_val - min_val) * (range[1] - range[0])
+    # Remap the intensity of the image to the range
+    remapped_image = cv2.normalize(image, None, range[0], range[1], cv2.NORM_MINMAX)
 
     if show_steps:
         show_images(
@@ -71,6 +66,34 @@ def remap_image_intensity(
 
     return remapped_image
 
+
+def normalize_image(image: np.ndarray) -> np.ndarray:
+    """
+    Normalize image intensity values to range [0, 255].
+
+    As we are working with pixel intensities normalization between 0 and 1
+    would mean that the image is completely black. Therefore, we normalize
+    the image to the range [0, 255].
+
+    .. attention::
+
+        This function will also accept RGB, HSV, and other images with
+        multiple channels. In this case, the normalization is applied
+        to each channel separately. This can lead to unexpected
+        results.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        Input image.
+
+    Returns
+    -------
+    np.ndarray
+        Normalized image.
+    """
+    return remap_image_intensity(image, (0, 255), show_steps=False)
+     
 
 def change_saturation(
     image: np.ndarray, delta: int, show_steps: bool = False

@@ -2,12 +2,14 @@ import cv2
 import numpy as np
 from typing import List, Tuple
 from .utils import show_images
+from .utils import check_grayscale_image
 
 
 def threshold(
     image: np.ndarray,
     thresh_limit: float = 0.8,
     threshold_kernel_size: int = 21,
+    show_steps: bool = False,
 ) -> np.ndarray:
     """Threshold the image
 
@@ -31,7 +33,7 @@ def threshold(
         raise TypeError(
             "Image must be a numpy array, not type {}".format(type(image))
         )
-    if not isinstance(thresh_limit, float):
+    if not isinstance(thresh_limit, (float, int)):
         raise TypeError(
             "Thresh limit must be a float, not type {}".format(type(thresh_limit))
         )
@@ -45,9 +47,12 @@ def threshold(
     # Calculate the threshold
     thresh_limit = thresh_limit * np.max(image)
     # Apply the threshold
-    _, image = cv2.threshold(image, thresh_limit, 255, cv2.THRESH_BINARY)
+    _, mask = cv2.threshold(image, thresh_limit, 255, cv2.THRESH_BINARY)
 
-    return image
+    if show_steps:
+        show_images({"Original image": image, "Thresholded image": mask})
+
+    return mask
 
 
 def adaptive_threshold(
@@ -90,6 +95,8 @@ def adaptive_threshold(
         raise TypeError(
             "Show steps must be a bool, not type {}".format(type(show_steps))
         )
+    # Check if the image is grayscale
+    check_grayscale_image(image, raise_exceptions=True)
 
     # Apply the adaptive threshold
     image = cv2.adaptiveThreshold(
