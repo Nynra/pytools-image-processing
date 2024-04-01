@@ -176,7 +176,7 @@ def check_binary_image(img: np.ndarray, raise_exceptions: bool = True) -> bool:
 
 
 def load_image(
-    filename: str, in_file_dir: bool = True, show_steps: bool = False
+    filename: str, in_file_dir: bool = False, show_steps: bool = False
 ) -> np.ndarray:
     """Load the image using opencv.
 
@@ -187,7 +187,7 @@ def load_image(
     filename : str
         The filename of the image to load.
     in_file_dir : bool, optional
-        If True, the filename is relative to the file directory. The default is True.
+        If True, the filename is relative to the file directory. The default is False.
     show_steps : bool, optional
         If True, show the steps of the conversion. The default is False.
 
