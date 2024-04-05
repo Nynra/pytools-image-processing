@@ -1,26 +1,38 @@
 import setuptools
+import os
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
 
-# with open("requirements.txt", "r") as fh:
-#     install_requires = fh.read().splitlines()
+# Read the README.md file
+with open("README.md", "r") as f:
+    long_description = f.read()
+
+
+install_requires = [
+    "opencv-python",
+    "scikit-image",
+    "matplotlib",
+    "scipy",
+    "numpy",
+]
+
+# Get the absolute path to the directory containing setup.py
+here = os.path.abspath(os.path.dirname(__file__))
+
+with open(os.path.join(here, "src/pytools_image_processing/__about__.py"), "r") as f:
+    about = {}
+    exec(f.read(), about)
+
 
 setuptools.setup(
-    name="pytools_image_processing",
-    version="0.0.3",
-    author="Nynra",
-    author_email="nynradev@pm.me",
-    description="Some usefull functions for image processing and analysis.",
-    long_description=long_description,
+    include_package_data=True,
+    name=about["__title__"],
+    version=about["__version__"],
+    author=about["__author__"],
+    author_email=about["__author_email__"],
+    description=about["__description__"],
+    long_description="long_description",
     long_description_content_type="text/markdown",
-    py_modules=["pytools_image_processing"],
+    py_modules=[about["__title__"]],
     package_dir={"": "src"},
-    install_requires=[
-        "opencv-python",
-        "scikit-image",
-        "matplotlib",
-        "scipy",
-        "numpy",
-    ]
+    install_requires=install_requires,
 )
