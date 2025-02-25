@@ -18,7 +18,7 @@ install_requires = [
 setuptools.setup(
     include_package_data=True,
     name="pytools_image_processing",
-    version="0.0.5",
+    version="0.0.6",
     author="Nynra",
     author_email="nynradev@pm.me",
     description="Some usefull functions for image processing and analysis.",
