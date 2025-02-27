@@ -8,10 +8,11 @@ from .utils import (
     check_binary_image,
     check_grayscale_image,
 )
+from .exceptions import ImageNotBinaryError, ImageNotGrayscaleError, ImageNotRGBError
 import copy
 
 
-def plot_intensity_profile(image: np.ndarray) -> np.ndarray:
+def plot_intensity_profile(image: np.ndarray, show_steps: bool=False) -> Tuple[np.ndarray, np.ndarray]:
     """Plot the intensity profile of the image.
 
     This function plots the intensity profile of the image. This can be used to
@@ -21,10 +22,26 @@ def plot_intensity_profile(image: np.ndarray) -> np.ndarray:
     ----------
     image : np.ndarray
         The image to plot the intensity profile of.
+    show_steps : bool, optional
+        If True show the resulting plot. The default is False.
+
+    Returns
+    -------
+    Tuple[np.ndarray, np.ndarray]
+        The x and y arrays of the intensity mesh grid.
+
+    Raises
+    ------
+    ImageNotGrayscaleError
+        If the image is not a grayscale image.
     """
     if not isinstance(image, np.ndarray):
-        raise ValueError(
+        raise TypeError(
             "Image should be a numpy array not type {}".format(type(image))
+        )
+    if not isinstance(show_steps, bool):
+        raise TypeError(
+            "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     # Check if the image is grayscale
     check_grayscale_image(image, raise_exceptions=True)
@@ -32,10 +49,14 @@ def plot_intensity_profile(image: np.ndarray) -> np.ndarray:
     # Create a mesh grid and plot the inverse intensity of the object
     # Change the only the black spots to white
     x, y = np.meshgrid(np.arange(image.shape[1]), np.arange(image.shape[0]))
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection="3d")
-    ax.plot_surface(x, y, object, cmap="viridis")
-    plt.show()
+    
+    if show_steps:
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d")
+        ax.plot_surface(x, y, image, cmap="viridis")
+        plt.show()
+    
+    return x, y
 
 
 def get_rgb_histogram(img: np.ndarray, show_steps: bool = False) -> np.ndarray:
@@ -52,13 +73,18 @@ def get_rgb_histogram(img: np.ndarray, show_steps: bool = False) -> np.ndarray:
     -------
     np.ndarray
         The histogram of the image.
+
+    Raises
+    ------
+    ImageNotRGBError
+        If the image is not an RGB image
     """
     if not isinstance(show_steps, bool):
-        raise ValueError(
+        raise TypeError(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     if not isinstance(img, np.ndarray):
-        raise ValueError("Image should be a numpy array not type {}".format(type(img)))
+        raise TypeError("Image should be a numpy array not type {}".format(type(img)))
     # Check if th image is BGR or RGB
     check_rgb_image(img, raise_exceptions=True)
 
@@ -110,13 +136,18 @@ def find_edges(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
     -------
     np.ndarray
         The edge detected image.
+
+    Raises
+    ------
+    ImageNotGrayscaleError
+        If the image is not a grayscale image.
     """
     if not isinstance(show_steps, bool):
-        raise ValueError(
+        raise TypeError(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     if not isinstance(image, np.ndarray):
-        raise ValueError(
+        raise TypeError(
             "Image should be a numpy array not type {}".format(type(image))
         )
     # Check if the image is grayscale
@@ -138,7 +169,6 @@ def find_components(
     image: np.ndarray,
     min_size: int,
     max_size: int,
-    crop_components: bool = False,
     show_steps: bool = False,
 ) -> tuple[list[np.ndarray], np.ndarray]:
     """Finds the connected components in the binary image.
@@ -146,10 +176,6 @@ def find_components(
     This function uses the :func:`cv2.connectedComponentsWithStats` function to find
     the connected components in a binary image. It then creates a smaller
     image for each component and a big image with all the components.
-
-    .. attention::
-
-        This function assumes that the input image is a binary image.
 
     Parameters
     ----------
@@ -159,9 +185,6 @@ def find_components(
         The minimum size of the connected components.
     max_size : int
         The maximum size of the connected components.
-    crop_components : bool, optional
-        If True, the components will be cropped to the smallest possible size.
-        The default is False.
     show_steps : bool, optional
         If True, show the steps of the conversion. The default is False.
 
@@ -169,25 +192,30 @@ def find_components(
     -------
     tuple[list[np.ndarray], np.ndarray]
         A List of cropped masks with only one component and a big mask with all the components.
+
+    Raises
+    ------
+    ImageNotBinaryError
+        If the image is not a binary image.
     """
     if not isinstance(image, np.ndarray):
-        raise ValueError(
+        raise TypeError(
             "Image should be a numpy array not type {}".format(type(image))
         )
     if not isinstance(min_size, int):
-        raise ValueError(
+        raise TypeError(
             "min_size should be an integer not type {}".format(type(min_size))
         )
     if not isinstance(max_size, int):
-        raise ValueError(
+        raise TypeError(
             "max_size should be an integer not type {}".format(type(max_size))
         )
     if not isinstance(show_steps, bool):
-        raise ValueError(
+        raise TypeError(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     # Check if the image is binary
-    # check_binary_image(image, raise_exceptions=True)
+    check_binary_image(image, raise_exceptions=True)
 
     # Perform connected component analysis
     num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(
@@ -224,10 +252,12 @@ def find_components(
         if 0 < len(components) < 10:
             for i, component in enumerate(components):
                 images[f"Component {i}"] = component
-        else:
+        elif len(components) >= 10:
             for i in range(10):
                 images[f"Component {i}"] = components[i]
             print(f"Found {len(components)} components, not showing them all.")
+        else:
+            print("No components found.")
 
         show_images(images)
 

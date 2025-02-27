@@ -5,131 +5,141 @@ from typing import Tuple
 from scipy import fftpack
 from scipy.signal import find_peaks
 from matplotlib.colors import LogNorm
-from .utils import check_rgb_image, show_images
+from .utils import check_rgb_image, show_images, check_grayscale_image
+from .exceptions import ImageNotRGBError, ImageNotGrayscaleError
 
 
-def rgb_to_grayscale(img: np.ndarray, show_steps: bool = False) -> np.ndarray:
-    """Convert an RGB image to a grayscale image.
+def rgb_to_grayscale(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
+    """
+    Converts an RGB image to a grayscale image.
 
     Parameters
     ----------
-    img : np.ndarray
-        The image to convert to grayscale.
+    image : np.ndarray
+        The image to convert to a grayscale image.
     show_steps : bool, optional
-        If True, show the steps of the conversion. The default is False.
-
+        If True, show the steps of the conversion. The default is True.
+    
     Returns
     -------
     np.ndarray
         The grayscale image.
+
+    Raises
+    ------
+    ImageNotRGBError
+        If the image is not an RGB image
     """
     if not isinstance(show_steps, bool):
         raise TypeError(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
-    if not isinstance(img, np.ndarray):
+    if not isinstance(image, np.ndarray):
         raise TypeError(
-            "Image should be a numpy array not type {}".format(type(img))
+            "Image should be a numpy array not type {}".format(type(image))
         )
-    check_rgb_image(img, raise_exceptions=True)
 
-    # Convert the image to grayscale
-    # gray_img = np.mean(img, axis=2)
-    gray_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    check_rgb_image(image, raise_exceptions=True)
+
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     if show_steps:
         show_images({
-            "Original image": img,
-            "Grayscale image": gray_img
+            "Original image": image,
+            "Grayscale image": gray_image
         })
 
-    return gray_img
+    return gray_image
 
 
-def grayscale_to_binary(img: np.ndarray, show_steps: bool = False) -> np.ndarray:
-    """Convert a grayscale image to a binary image.
+def rgb_to_hsv(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
+    """
+    Converts an RGB image to an HSV image.
 
     Parameters
     ----------
-    img : np.ndarray
-        The image to convert to binary.
+    image : np.ndarray
+        The image to convert to an HSV image.
     show_steps : bool, optional
-        If True, show the steps of the conversion. The default is False.
+        If True, show the steps of the conversion. The default is True.
+    
+    Returns
+    -------
+    np.ndarray
+        The HSV image.
+    
+    Raises
+    ------
+    ImageNotRGBError
+        If the image is not an RGB image
+    """
+    if not isinstance(show_steps, bool):
+        raise TypeError(
+            "show_steps should be a boolean not type {}".format(type(show_steps))
+        )
+    if not isinstance(image, np.ndarray):
+        raise TypeError(
+            "Image should be a numpy array not type {}".format(type(image))
+        )
+
+    check_rgb_image(image, raise_exceptions=True)
+
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    if show_steps:
+        show_images({
+            "Original image": image,
+            "HSV image": hsv_image
+        })
+
+    return hsv_image
+
+
+def bgr_to_rgb(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
+    """
+    Converts a BGR image to an RGB image.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The image to convert to an RGB image.
+    show_steps : bool, optional
+        If True, show the steps of the conversion. The default is True.
 
     Returns
     -------
     np.ndarray
-        The binary image.
+        The RGB image.
     """
     if not isinstance(show_steps, bool):
         raise TypeError(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
-    if not isinstance(img, np.ndarray):
+    if not isinstance(image, np.ndarray):
         raise TypeError(
-            "Image should be a numpy array not type {}".format(type(img))
+            "Image should be a numpy array not type {}".format(type(image))
         )
-    
-    if len(img.shape) == 3:
-        raise TypeError("Image must be grayscale!")
 
-    # Convert to binary image
-    binary_img = img > 127
+    rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     if show_steps:
         show_images({
-            "Original image": img,
-            "Binary image": binary_img
+            "Original image": image,
+            "RGB image": rgb_image
         })
 
-    return binary_img
+    return rgb_image
 
 
-def rgb_to_binary(img: np.ndarray, show_steps: bool = False) -> np.ndarray:
-    """Convert an RGB image to a binary image.
-
-    Parameters
-    ----------
-    img : np.ndarray
-        The image to convert to binary.
-    show_steps : bool, optional
-        If True, show the steps of the conversion. The default is False.
-
-    Returns
-    -------
-    np.ndarray
-        The binary image.
-    """
-    if not isinstance(show_steps, bool):
-        raise TypeError(
-            "show_steps should be a boolean not type {}".format(type(show_steps))
-        )
-    if not isinstance(img, np.ndarray):
-        raise TypeError(
-            "Image should be a numpy array not type {}".format(type(img))
-        )
-    
-    check_rgb_image(img, raise_exceptions=True)
-    gray_img = rgb_to_grayscale(img, show_steps=False)
-    binary_img = grayscale_to_binary(gray_img, show_steps=False)
-
-    if show_steps:
-        show_images({
-            "Original image": img,
-            "Binary image": binary_img
-        })
-
-    return binary_img
-
-
-def convert_to_fft_image(image: np.ndarray, show_steps: bool = True) -> Tuple[np.ndarray, np.ndarray, int, float]:
+def grayscale_to_fft_image(image: np.ndarray, show_steps: bool = True) -> Tuple[np.ndarray, np.ndarray, int, float]:
     """
     Converts the image to a fourrier transformed image.
 
-    .. attention::
-        This function does accept color images, but will convert them to grayscale.
-
     The function will generate the fft image and try to estimate the dominant frequency and angle.
+
+    .. attention::
+        This function is broken for now and will be fixed somewhere in the future, as I do
+        not have the time to fix it right now.
 
     Parameters
     ----------
@@ -143,7 +153,14 @@ def convert_to_fft_image(image: np.ndarray, show_steps: bool = True) -> Tuple[np
     Tuple[np.ndarray, np.ndarray, int, float]
         A tuple containing the fourrier transformed image, the 1D spectrum, the dominant 
         frequency and the angle of the dominant frequency.
+
+    Raises
+    ------
+    ImageNotGrayscaleError
+        If the image is not a grayscale
     """
+    raise NotImplementedError("This function is broken and will be fixed somewhere in the future")
+
     if not isinstance(show_steps, bool):
         raise TypeError(
             "show_steps should be a boolean not type {}".format(type(show_steps))
@@ -153,9 +170,7 @@ def convert_to_fft_image(image: np.ndarray, show_steps: bool = True) -> Tuple[np
             "Image should be a numpy array not type {}".format(type(image))
         )
     
-    # If not grayscale, convert to grayscale
-    if len(image.shape) == 3:
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    check_grayscale_image(image, raise_exceptions=True)
 
     # Calculate the x and y component fft
     fft_img = fftpack.fftshift(fftpack.fft2(image))

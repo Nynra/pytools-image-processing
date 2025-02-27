@@ -1,6 +1,6 @@
 [project]
 name = "pytools_image_processing"
-version = "0.0.11"
+version = "0.1.1a"
 authors = [
     { name="Bas Klein Ikkink", email="basklikk@pm.me" },
 ]

@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 from typing import Tuple
+from .exceptions import ImageNotBinaryError, ImageNotGrayscaleError, ImageNotRGBError
 
 
 def show_images(images: dict[str, np.ndarray], show_axis: bool = True) -> ...:
@@ -18,15 +19,15 @@ def show_images(images: dict[str, np.ndarray], show_axis: bool = True) -> ...:
         If True, show the axis of the images. The default is True.
     """
     if not isinstance(images, dict):
-        raise ValueError(
+        raise TypeError(
             "images should be a dictionary not type {}".format(type(images))
         )
     if not all(isinstance(k, str) for k in images.keys()):
-        raise ValueError("Keys of images should be strings")
+        raise TypeError("Keys of images should be strings")
     if not all(isinstance(v, np.ndarray) for v in images.values()):
-        raise ValueError("Values of images should be numpy arrays")
+        raise TypeError("Values of images should be numpy arrays")
     if not isinstance(show_axis, bool):
-        raise ValueError(
+        raise TypeError(
             "show_axis should be a boolean not type {}".format(type(show_axis))
         )
 
@@ -64,6 +65,11 @@ def show_images(images: dict[str, np.ndarray], show_axis: bool = True) -> ...:
 def check_rgb_image(img: np.ndarray, raise_exceptions: bool = True) -> bool:
     """Check if the image is an RGB image.
 
+    .. warning::
+        While this method can distinguish between RGB and grayscale images, it
+        cannot distinguish between RGB, BGR and HSV images. If the image is
+        in BGR, HSV or any other 3 channel format, it will still return True.
+
     Parameters
     ----------
     img : np.ndarray
@@ -78,29 +84,37 @@ def check_rgb_image(img: np.ndarray, raise_exceptions: bool = True) -> bool:
 
     Raises
     ------
-    ValueError
+    ImageNotRGBError
         If the image is not RGB and raise_exceptions is True.
     """
     if not isinstance(img, np.ndarray):
-        raise ValueError("Image should be a numpy array not type {}".format(type(img)))
+        raise TypeError("Image should be a numpy array not type {}".format(type(img)))
     if not isinstance(raise_exceptions, bool):
-        raise ValueError(
+        raise TypeError(
             "raise_exceptions should be a boolean not type {}".format(
                 type(raise_exceptions)
             )
         )
     # Check if the image is rgb or not
-    if img.shape[2] == 3:
-        return True
-    else:
-        if raise_exceptions:
-            raise ValueError("Image is not RGB!")
-        else:
-            return False
+    try:
+        if img.shape[2] == 3:
+            return True
+    except IndexError:
+        pass
+
+    if raise_exceptions:
+        raise ImageNotRGBError("Image is not RGB!")
+    return False
 
 
 def check_grayscale_image(img: np.ndarray, raise_exceptions: bool = True) -> bool:
     """Check if the image is a grayscale image.
+
+    .. warning::
+        While this method can distinguish between grayscale and RGB images, it
+        cannot distinguish between grayscale and binary images. If the image is
+        binary, it will still return True. (technically binary images are
+        a form of grayscale images)
 
     Parameters
     ----------
@@ -116,29 +130,34 @@ def check_grayscale_image(img: np.ndarray, raise_exceptions: bool = True) -> boo
 
     Raises
     ------
-    ValueError
+    ImageNotGrayscaleError
         If the image is not grayscale and raise_exceptions is True.
     """
     if not isinstance(img, np.ndarray):
-        raise ValueError("Image should be a numpy array not type {}".format(type(img)))
+        raise TypeError("Image should be a numpy array not type {}".format(type(img)))
     if not isinstance(raise_exceptions, bool):
-        raise ValueError(
+        raise TypeError(
             "raise_exceptions should be a boolean not type {}".format(
                 type(raise_exceptions)
             )
         )
     # Check if the image is grayscale or not
-    if len(img.shape) == 2:
+    if len(img.shape) == 2 and not check_binary_image(img, raise_exceptions=False):
         return True
 
     if raise_exceptions:
-        raise ValueError("Image is not grayscale!")
+        raise ImageNotGrayscaleError("Image is not grayscale!")
     else:
         return False
 
 
 def check_binary_image(img: np.ndarray, raise_exceptions: bool = True) -> bool:
     """Check if the image is a binary image.
+
+    .. attention::
+        This method only checks if the image is binary or not. This means a mask
+        and a grayscale image with only 0 and 255 values will be considered binary as
+        they are 2 dimensional with only 2 unique values.
 
     Parameters
     ----------
@@ -154,29 +173,36 @@ def check_binary_image(img: np.ndarray, raise_exceptions: bool = True) -> bool:
 
     Raises
     ------
-    ValueError
+    ImageNotBinaryError
         If the image is not binary and raise_exceptions is True.
     """
     if not isinstance(img, np.ndarray):
-        raise ValueError("Image should be a numpy array not type {}".format(type(img)))
+        raise TypeError("Image should be a numpy array not type {}".format(type(img)))
     if not isinstance(raise_exceptions, bool):
-        raise ValueError(
+        raise TypeError(
             "raise_exceptions should be a boolean not type {}".format(
                 type(raise_exceptions)
             )
         )
     # Check if the image is binary or not
-    if np.array_equal(img, img.astype(bool)):
+    if img.dtype == np.bool:
+        # In case of booleans
+        return True
+    elif len(np.unique(img)) == 2:
+        # In case of 0, 1
         return True
     else:
         if raise_exceptions:
-            raise ValueError("Image is not binary!")
+            raise ImageNotBinaryError("Image is not binary!")
         else:
             return False
 
 
 def load_image(
-    filename: str, in_file_dir: bool = False, show_steps: bool = False
+    filename: str,
+    mode: str = "rgb",
+    in_file_dir: bool = False,
+    show_steps: bool = False,
 ) -> np.ndarray:
     """Load the image using opencv.
 
@@ -186,10 +212,17 @@ def load_image(
     ----------
     filename : str
         The filename of the image to load.
+    mode : str, optional
+        The mode of the image. The options are:
+            - "rgb": Load the image as RGB.
+            - "bgr": Load the image as BGR.
+            - "grayscale": Load the image as grayscale.
+        The default is "rgb".
     in_file_dir : bool, optional
-        If True, the filename is relative to the file directory. The default is False.
+        If True, the filename is relative to the current working directory.
+        The default is False.
     show_steps : bool, optional
-        If True, show the steps of the conversion. The default is False.
+        If True, show the loaded image. The default is False.
 
     Returns
     -------
@@ -202,29 +235,43 @@ def load_image(
         If the file does not exist.
     """
     if not isinstance(filename, str):
-        raise ValueError(
+        raise TypeError(
             "filename should be a string not type {}".format(type(filename))
         )
+    if not isinstance(mode, str):
+        raise TypeError("mode should be a string not type {}".format(type(mode)))
+    if mode.lower() not in ("rgb", "bgr", "grayscale"):
+        raise TypeError(
+            "mode should be 'rgb', 'bgr' or 'grayscale' not {}".format(mode)
+        )
     if not isinstance(in_file_dir, bool):
-        raise ValueError(
+        raise TypeError(
             "in_file_dir should be a boolean not type {}".format(type(in_file_dir))
         )
     if not isinstance(show_steps, bool):
-        raise ValueError(
+        raise TypeError(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
 
     # Check if the file exists
     if in_file_dir:
         filename = os.path.join(os.path.dirname(__file__), filename)
-
     if not os.path.isfile(filename):
         raise FileNotFoundError(f"File {filename} does not exist!")
 
-    img = cv2.imread(
-        filename,
-    )
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # Load the image
+    img = cv2.imread(filename)
+
+    # Convert the image to the right mode
+    match mode.lower():
+        case "rgb":
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        case "bgr":
+            pass  # Image is already in BGR
+        case "grayscale":
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        case _:
+            raise ValueError(f"Mode {mode} is not supported!")
 
     if show_steps:
         show_images({"Original image": img})
@@ -348,9 +395,7 @@ def rotate_image(
             rotated_image = cv2.cvtColor(rotated_image, cv2.COLOR_BGR2GRAY)
 
         # Threshold the image to detect black areas
-        _, thresh = cv2.threshold(
-            rotated_image, 1, 255, cv2.THRESH_BINARY
-        )
+        _, thresh = cv2.threshold(rotated_image, 1, 255, cv2.THRESH_BINARY)
 
         # Find the contours of the non black areas
         contours, _ = cv2.findContours(

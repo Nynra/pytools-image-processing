@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 from typing import List
-from .utils import show_images
+from .utils import show_images, check_rgb_image, check_grayscale_image
 
 
 def stack_keypoint_matching(
@@ -82,7 +82,8 @@ def stack_keypoint_matching(
 
             # Estimate perspective transformation
             M, mask = cv2.findHomography(dst_pts, src_pts, cv2.RANSAC, 5.0)
-            w, h, _ = imageF.shape
+            dims = imageF.shape  # Might give errors
+            w, h = dims[0], dims[1]
             imageF = cv2.warpPerspective(imageF, M, (h, w))
             stacked_image += imageF
 
@@ -103,9 +104,8 @@ def stack_keypoint_matching(
 def stack_ECC(images: List[np.ndarray], show_steps: bool = False) -> np.ndarray:
     """Align and stack images by estimating the perspective transformation
 
-    This method is slower but more accurate than the keypoint matching.
-    The method expects all images to be of the same size and that they
-    all exist.
+    This method is slower but more accurate than keypoint matching.
+    The method expects all images to exist and be of the same size.
 
     Parameters
     ----------
@@ -137,6 +137,10 @@ def stack_ECC(images: List[np.ndarray], show_steps: bool = False) -> np.ndarray:
         raise TypeError(
             "Show steps must be a bool, not type {}".format(type(show_steps))
         )
+    if check_grayscale_image(images[0], raise_exceptions=False):
+        is_gray = True
+    else:
+        is_gray = False
 
     M = np.eye(3, 3, dtype=np.float32)
 
@@ -147,17 +151,22 @@ def stack_ECC(images: List[np.ndarray], show_steps: bool = False) -> np.ndarray:
         image = image.astype(np.float32) / 255
         if first_image is None:
             # convert to gray scale floating point image
-            first_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            stacked_image = image
+            if is_gray:
+                first_image = image
+                stacked_image = image
+            else:
+                first_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                stacked_image = image
         else:
             # Estimate perspective transform
             s, M = cv2.findTransformECC(
-                cv2.cvtColor(image, cv2.COLOR_BGR2GRAY),
+                cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if not is_gray else image,
                 first_image,
                 M,
                 cv2.MOTION_HOMOGRAPHY,
             )
-            w, h, _ = image.shape
+            dims = image.shape # Might give errors
+            w, h = dims[0], dims[1]
             # Align image to first image
             image = cv2.warpPerspective(image, M, (h, w))
             stacked_image += image

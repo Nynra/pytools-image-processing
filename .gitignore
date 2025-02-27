@@ -5,6 +5,7 @@ __pycache__/
 .venv
 misc
 .vscode
+tests/test_images/tmp/*
 
 # C extensions
 *.so

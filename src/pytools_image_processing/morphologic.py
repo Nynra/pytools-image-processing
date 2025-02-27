@@ -2,6 +2,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from .utils import check_rgb_image, show_images, check_grayscale_image
+from .exceptions import ImageNotGrayscaleError, ImageNotRGBError
 
 
 def remap_image_intensity(
@@ -11,7 +12,6 @@ def remap_image_intensity(
 
     Remap the intensity of the image to a specific range. This is useful to
     increase the contrast of the image while keeping relative intensities the same.
-    When the range is [0,1], the image is normalized.
 
     Parameters
     ----------
@@ -29,23 +29,23 @@ def remap_image_intensity(
 
     Raises
     ------
-    ValueError
-        If the range is not a tuple of two integers or the image is not RGB.
+    ImageNotGrayscaleError
+        If the image is not grayscale.
     """
     if not isinstance(range, (tuple, list)):
-        raise ValueError("Range should be a tuple not type {}".format(type(range)))
+        raise TypeError("Range should be a tuple not type {}".format(type(range)))
     if not isinstance(range[0], int) or not isinstance(range[1], int):
-        raise ValueError(
+        raise TypeError(
             "Range should be a tuple of integers not type {} and {}".format(
                 type(range[0]), type(range[1])
             )
         )
     if not isinstance(show_steps, bool):
-        raise ValueError(
+        raise TypeError(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     if not isinstance(image, np.ndarray):
-        raise ValueError(
+        raise TypeError(
             "Image should be a numpy array not type {}".format(type(image))
         )
 
@@ -71,29 +71,10 @@ def normalize_image(image: np.ndarray) -> np.ndarray:
     """
     Normalize image intensity values to range [0, 255].
 
-    As we are working with pixel intensities normalization between 0 and 1
-    would mean that the image is completely black. Therefore, we normalize
-    the image to the range [0, 255].
-
-    .. attention::
-
-        This function will also accept RGB, HSV, and other images with
-        multiple channels. In this case, the normalization is applied
-        to each channel separately. This can lead to unexpected
-        results.
-
-    Parameters
-    ----------
-    image : np.ndarray
-        Input image.
-
-    Returns
-    -------
-    np.ndarray
-        Normalized image.
+    This function is a wrapper around remap_image_intensity that normalizes the image to the range [0, 255].
     """
     return remap_image_intensity(image, (0, 255), show_steps=False)
-     
+
 
 def change_saturation(
     image: np.ndarray, delta: int, show_steps: bool = False
@@ -117,17 +98,19 @@ def change_saturation(
 
     Raises
     ------
+    ImageNotRGBError
+        If the image is not RGB.
     ValueError
-        If the delta is not between -255 and 255 or the image is not RGB.
+        If the delta is not between -255 and 255.
     """
     if not isinstance(delta, int):
-        raise ValueError("Delta should be an integer not type {}".format(type(delta)))
+        raise TypeError("Delta should be an integer not type {}".format(type(delta)))
     if not isinstance(show_steps, bool):
-        raise ValueError(
+        raise TypeError(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     if not isinstance(image, np.ndarray):
-        raise ValueError(
+        raise TypeError(
             "Image should be a numpy array not type {}".format(type(image))
         )
 
@@ -182,17 +165,19 @@ def change_brightness(
 
     Raises
     ------
+    ImageNotRGBError
+        If the image is not RGB.
     ValueError
-        If the delta is not between -255 and 255 or the image is not RGB.
+        If the delta is not between -255 and 255.
     """
     if not isinstance(delta, int):
-        raise ValueError("Delta should be an integer not type {}".format(type(delta)))
+        raise TypeError("Delta should be an integer not type {}".format(type(delta)))
     if not isinstance(show_steps, bool):
-        raise ValueError(
+        raise TypeError(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     if not isinstance(image, np.ndarray):
-        raise ValueError(
+        raise TypeError(
             "Image should be a numpy array not type {}".format(type(image))
         )
 
@@ -245,17 +230,18 @@ def blur(image: np.ndarray, kernel_size: int, show_steps: bool = True) -> np.nda
         The blurred image.
     """
     if not isinstance(image, np.ndarray):
-        raise ValueError(
+        raise TypeError(
             "Image should be a numpy array not type {}".format(type(image))
         )
     if not isinstance(kernel_size, int):
-        raise ValueError(
+        raise TypeError(
             "kernel_size should be an integer not type {}".format(type(kernel_size))
         )
     if not isinstance(show_steps, bool):
-        raise ValueError(
+        raise TypeError(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
+
     # Create the kernel
     kernel = np.ones((kernel_size, kernel_size)) / (kernel_size**2)
 
@@ -276,8 +262,9 @@ def blur(image: np.ndarray, kernel_size: int, show_steps: bool = True) -> np.nda
 
 def gaussian_blur(
     image: np.ndarray,
-    kernel_size: tuple[int, int],
+    kernel_size: int,
     sigma: int = 1,
+    show_steps: bool = True,
 ) -> np.ndarray:
     """Blur the image using a gaussian filter
 
@@ -285,10 +272,12 @@ def gaussian_blur(
     ----------
     image : np.ndarray
         The image to blur
-    kernel_size : tuple[int, int]
+    kernel_size : int
         The kernel size for the gaussian filter
     sigma : int, optional
         The sigma value for the gaussian filter, by default 1
+    show_steps : bool, optional
+        If True, show the steps of the conversion, by default True
 
     Returns
     -------
@@ -297,19 +286,23 @@ def gaussian_blur(
     """
     if not isinstance(image, np.ndarray):
         raise TypeError("Image must be a numpy array, not type {}".format(type(image)))
-    if not isinstance(kernel_size, tuple):
+    if not isinstance(kernel_size, int):
         raise TypeError(
-            "Kernel size must be a tuple, not type {}".format(type(kernel_size))
-        )
-    if not isinstance(kernel_size[0], int) or not isinstance(kernel_size[1], int):
-        raise TypeError(
-            "Kernel size must be a tuple of ints, not type {} and {}".format(
-                type(kernel_size[0]), type(kernel_size[1])
-            )
+            "Gaussian kernel size must be an int, not type {}".format(type(kernel_size))
         )
     if not isinstance(sigma, int):
         raise TypeError("Gaus sigma must be an int, not type {}".format(type(sigma)))
+    if not isinstance(show_steps, bool):
+        raise TypeError(
+            "show_steps must be a boolean, not type {}".format(type(show_steps))
+        )
 
     # Reduce noise using gaussian filter
-    image = cv2.GaussianBlur(image, kernel_size, sigma)
+    image = cv2.GaussianBlur(image, [kernel_size, kernel_size], sigma)
+
+    if show_steps:
+        plt.imshow(image)
+        plt.title("Gaussian blur")
+        plt.show()
+
     return image
