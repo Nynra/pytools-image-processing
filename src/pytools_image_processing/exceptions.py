@@ -13,6 +13,6 @@ class ImageNotBinaryError(Exception):
     pass
 
 
-class ImageNotRGBError(Exception):
-    """Raised when an image is not RGB."""
+class ImageNot3ChannelError(Exception):
+    """Raised when an image is not a 3 channel image."""
     pass

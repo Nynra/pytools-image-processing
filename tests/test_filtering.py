@@ -8,7 +8,7 @@ from pytools_image_processing.filtering import (
 from pytools_image_processing.exceptions import (
     ImageNotBinaryError,
     ImageNotGrayscaleError,
-    ImageNotRGBError,
+    ImageNot3ChannelError,
 )
 import numpy as np
 import cv2

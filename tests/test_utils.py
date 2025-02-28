@@ -1,7 +1,7 @@
 from unittest import TestCase
 from pytools_image_processing.utils import (
     show_images,
-    check_rgb_image,
+    check_three_channel_image,
     check_grayscale_image,
     check_binary_image,
     load_image,
@@ -10,7 +10,11 @@ from pytools_image_processing.utils import (
     rotated_rect_with_max_area,
     crop_image,
 )
-
+from pytools_image_processing.exceptions import (
+    ImageNotGrayscaleError,
+    ImageNotBinaryError,
+    ImageNot3ChannelError,
+)
 import numpy as np
 import cv2
 import os
@@ -27,78 +31,143 @@ class TestShowImages(TestCase):
         show_images(images=test_images)
 
 
-class TestCheckRGBImage(TestCase):
-    """Test the check_rgb_image function."""
+class TestCheckThreeChannelImage(TestCase):
+    """Test the check_three_channel_image function."""
 
-    def test_decide_rgb_or_bgr(self):
-        """Test if the function decides between RGB and BGR correctly."""
-        test_rgb_image = np.random.randint(0, 255, (100, 100, 3)).astype(np.uint8)
-
-        self.assertTrue(check_rgb_image(img=test_rgb_image, raise_exceptions=False))
-        self.assertFalse(
-            check_rgb_image(
-                img=cv2.cvtColor(test_rgb_image, cv2.COLOR_RGB2BGR),
-                raise_exceptions=False,
-            )
-        )
-
-    def test_decide_rgb_or_grayscale_image(self):
-        """Test if the function decides between RGB and grayscale images correctly."""
-        test_rgb_image = np.random.randint(0, 255, (100, 100, 3)).astype(np.uint8)
-
-        self.assertTrue(check_rgb_image(img=test_rgb_image, raise_exceptions=False))
-        self.assertFalse(
-            check_rgb_image(
-                img=np.random.randint(0, 255, (100, 100)).astype(np.uint8),
-                raise_exceptions=False,
-            )
-        )
-
-    def test_decide_rgb_or_other_3_channel_image(self):
-        """Test if the function decides between RGB and other 3 channel images correctly."""
-        test_rgb_image = np.random.randint(0, 255, (100, 100, 3)).astype(np.uint8)
-
-        self.assertTrue(check_rgb_image(img=test_rgb_image, raise_exceptions=False))
-        self.assertFalse(
-            check_rgb_image(
+    def test_verify_3channel_image(self):
+        """Test if the function verifies 3-channel images correctly."""
+        self.assertTrue(
+            check_three_channel_image(
                 img=np.random.randint(0, 255, (100, 100, 3)).astype(np.uint8),
                 raise_exceptions=False,
             )
         )
 
+    def test_3channel_or_binary(self):
+        """Test if the function decides between 3-channel and binary images correctly."""
+        self.assertFalse(
+            check_three_channel_image(
+                img=np.random.randint(0, 2, (100, 100)).astype(np.bool),
+                raise_exceptions=False,
+            )
+        )
+        with self.assertRaises(ImageNot3ChannelError):
+            check_three_channel_image(
+                img=np.random.randint(0, 2, (100, 100)).astype(np.bool),
+                raise_exceptions=True,
+            )
+
+    def test_3channel_or_grayscale(self):
+        """Test if the function decides between 3-channel and grayscale images correctly."""
+        self.assertFalse(
+            check_three_channel_image(
+                img=np.random.randint(0, 255, (100, 100)).astype(np.uint8),
+                raise_exceptions=False,
+            )
+        )
+        with self.assertRaises(ImageNot3ChannelError):
+            check_three_channel_image(
+                img=np.random.randint(0, 255, (100, 100)).astype(np.uint8),
+                raise_exceptions=True,
+            )
+
 
 class TestCheckGrayscaleImage(TestCase):
     """Test the check_grayscale_image function."""
 
-    def test_decide_grayscale_or_rgb_image(self):
-        """Test if the function decides between grayscale and RGB images correctly."""
-        test_grayscale_image = np.random.randint(0, 255, (100, 100)).astype(np.uint8)
+    def test_verify_grayscale_image(self):
+        """Test if the function verifies grayscale images correctly."""
+        self.assertTrue(
+            check_grayscale_image(
+                img=np.random.randint(0, 255, (100, 100)).astype(np.uint8),
+                raise_exceptions=False,
+            )
+        )
+
+    def test_grayscale_or_binary(self):
+        """Test if the function decides between grayscale and binary images correctly."""
+        self.assertFalse(
+            check_grayscale_image(
+                img=np.random.randint(0, 2, (100, 100)).astype(np.bool),
+                raise_exceptions=False,
+            )
+        )
+        with self.assertRaises(ImageNotGrayscaleError):
+            check_grayscale_image(
+                img=np.random.randint(0, 2, (100, 100)).astype(np.bool),
+                raise_exceptions=True,
+            )
 
         self.assertTrue(
-            check_grayscale_image(img=test_grayscale_image, raise_exceptions=False)
+            check_grayscale_image(
+                img=np.random.randint(0, 255, (100, 100)).astype(np.uint8),
+                raise_exceptions=False,
+                enforce_not_boolean=False
+            )
         )
+
+    def test_grayscale_or_3channel(self):
+        """Test if the function decides between grayscale and 3-channel images correctly."""
         self.assertFalse(
             check_grayscale_image(
                 img=np.random.randint(0, 255, (100, 100, 3)).astype(np.uint8),
                 raise_exceptions=False,
             )
         )
+        with self.assertRaises(ImageNotGrayscaleError):
+            check_grayscale_image(
+                img=np.random.randint(0, 255, (100, 100, 3)).astype(np.uint8),
+                raise_exceptions=True,
+            )
 
 
 class TestCheckBinaryImage(TestCase):
     """Test the check_binary_image function."""
 
-    def test_decide_binary_or_rgb_image(self):
-        """Test if the function decides between binary and RGB images correctly."""
-        test_binary_image = np.random.randint(0, 2, (100, 100)).astype(np.uint8)
+    def test_verify_binary_image(self):
+        """Test if the function verifies binary images correctly."""
+        self.assertTrue(
+            check_binary_image(
+                img=np.random.randint(0, 2, (100, 100)).astype(np.bool),
+                raise_exceptions=False,
+            )
+        )
 
-        self.assertTrue(check_binary_image(img=test_binary_image, raise_exceptions=False))
+    def test_binary_or_grayscale(self):
+        """Test if the function decides between binary and grayscale images correctly."""
+        self.assertFalse(
+            check_binary_image(
+                img=np.random.randint(0, 255, (100, 100)).astype(np.uint8),
+                raise_exceptions=False,
+            )
+        )
+        with self.assertRaises(ImageNotBinaryError):
+            check_binary_image(
+                img=np.random.randint(0, 255, (100, 100)).astype(np.uint8),
+                raise_exceptions=True,
+            )
+        
+        self.assertTrue(
+            check_binary_image(
+                img=np.random.randint(0, 2, (100, 100)).astype(np.bool),
+                raise_exceptions=False,
+                enforce_boolean=False
+            )
+        )
+
+    def test_binary_or_3channel(self):
+        """Test if the function decides between binary and 3-channel images correctly."""
         self.assertFalse(
             check_binary_image(
                 img=np.random.randint(0, 255, (100, 100, 3)).astype(np.uint8),
                 raise_exceptions=False,
             )
         )
+        with self.assertRaises(ImageNotBinaryError):
+            check_binary_image(
+                img=np.random.randint(0, 255, (100, 100, 3)).astype(np.uint8),
+                raise_exceptions=True,
+            )
 
 
 class TestLoadImage(TestCase):
@@ -152,3 +221,31 @@ class TestLoadImage(TestCase):
         """Test if the function raises an error when loading a non-existing image."""
         with self.assertRaises(FileNotFoundError):
             load_image("non_existing_image.png", mode="RGB")
+
+
+class TestGetBoundingRect(TestCase):
+
+    def test_get_bounding_rect(self):
+        """Test if the function returns the correct bounding rectangle."""
+        self.fail("Not implemented yet.")
+
+
+class TestRotateImage(TestCase):
+    
+    def test_rotate_image(self):
+        """Test if the function rotates the image correctly."""
+        self.fail("Not implemented yet.")
+
+
+class TestRotatedRectWithMaxArea(TestCase):
+
+    def test_rotated_rect_with_max_area(self):
+        """Test if the function returns the correct rotated rectangle."""
+        self.fail("Not implemented yet.")
+
+
+class TestCropImage(TestCase):
+
+    def test_crop_image(self):
+        """Test if the function crops the image correctly."""
+        self.fail("Not implemented yet.")

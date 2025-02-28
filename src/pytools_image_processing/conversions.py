@@ -5,13 +5,17 @@ from typing import Tuple
 from scipy import fftpack
 from scipy.signal import find_peaks
 from matplotlib.colors import LogNorm
-from .utils import check_rgb_image, show_images, check_grayscale_image
-from .exceptions import ImageNotRGBError, ImageNotGrayscaleError
+from .utils import check_three_channel_image, show_images, check_grayscale_image
+from .exceptions import ImageNotGrayscaleError, ImageNot3ChannelError
 
 
-def rgb_to_grayscale(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
-    """
-    Converts an RGB image to a grayscale image.
+def bgr_to_grayscale(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
+    """Converts an RGB image to a grayscale image.
+
+    .. attention::
+        The image is assumed to be in BGR format but any other 3 channel image
+        will be accepted as well. This can lead to unexpected results.
+
 
     Parameters
     ----------
@@ -27,8 +31,8 @@ def rgb_to_grayscale(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
 
     Raises
     ------
-    ImageNotRGBError
-        If the image is not an RGB image
+    ImageNot3ChannelError
+        If the image is not a 3 channel image
     """
     if not isinstance(show_steps, bool):
         raise TypeError(
@@ -39,8 +43,7 @@ def rgb_to_grayscale(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
             "Image should be a numpy array not type {}".format(type(image))
         )
 
-    check_rgb_image(image, raise_exceptions=True)
-
+    check_three_channel_image(image, raise_exceptions=True)
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     if show_steps:
@@ -52,9 +55,13 @@ def rgb_to_grayscale(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
     return gray_image
 
 
-def rgb_to_hsv(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
+def bgr_to_hsv(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
     """
-    Converts an RGB image to an HSV image.
+    Converts an BGR image to an HSV image.
+
+    .. attention::
+        The image is assumed to be in BGR format but any other 3 channel image
+        will be accepted as well. This can lead to unexpected results
 
     Parameters
     ----------
@@ -70,8 +77,8 @@ def rgb_to_hsv(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
     
     Raises
     ------
-    ImageNotRGBError
-        If the image is not an RGB image
+    ImageNot3ChannelError
+        If the image is not a 3 channel image
     """
     if not isinstance(show_steps, bool):
         raise TypeError(
@@ -82,8 +89,7 @@ def rgb_to_hsv(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
             "Image should be a numpy array not type {}".format(type(image))
         )
 
-    check_rgb_image(image, raise_exceptions=True)
-
+    check_three_channel_image(image, raise_exceptions=True)
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     if show_steps:
@@ -95,9 +101,60 @@ def rgb_to_hsv(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
     return hsv_image
 
 
+def hsv_to_bgr(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
+    """Coverts an HSV image to a BGR image.
+    
+    .. attention::
+        The image is assumed to be in HSV format but any other 3 channel image
+        will be accepted as well. This can lead to unexpected results
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The image to convert to a BGR image.
+    show_steps : bool, optional
+        If True, show the steps of the conversion. The default is True.
+
+    Returns
+    -------
+    np.ndarray
+        The BGR image.
+    
+    Raises
+    ------
+    ImageNot3ChannelError
+        If the image is not a 3 channel image
+    """
+    if not isinstance(show_steps, bool):
+        raise TypeError(
+            "show_steps should be a boolean not type {}".format(type(show_steps))
+        )
+    if not isinstance(image, np.ndarray):
+        raise TypeError(
+            "Image should be a numpy array not type {}".format(type(image))
+        )
+
+    check_three_channel_image(image, raise_exceptions=True)
+    bgr_image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
+
+    if show_steps:
+        show_images({
+            "Original image": image,
+            "BGR image": bgr_image
+        })
+
+    return bgr_image
+
+
 def bgr_to_rgb(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
     """
     Converts a BGR image to an RGB image.
+
+    Mosly used for visualization purposes.
+
+    .. attention::
+        The image is assumed to be in BGR format but any other 3 channel image
+        will be accepted as well. This can lead to unexpected results
 
     Parameters
     ----------
@@ -120,6 +177,7 @@ def bgr_to_rgb(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
             "Image should be a numpy array not type {}".format(type(image))
         )
 
+    check_three_channel_image(image, raise_exceptions=True)
     rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     if show_steps:

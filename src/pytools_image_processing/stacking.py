@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 from typing import List
-from .utils import show_images, check_rgb_image, check_grayscale_image
+from .utils import show_images, check_three_channel_image, check_grayscale_image, check_binary_image
 
 
 def stack_keypoint_matching(
@@ -137,6 +137,8 @@ def stack_ECC(images: List[np.ndarray], show_steps: bool = False) -> np.ndarray:
         raise TypeError(
             "Show steps must be a bool, not type {}".format(type(show_steps))
         )
+    if check_binary_image(images[0], raise_exceptions=False):
+        raise ValueError("Images must not be binary")
     if check_grayscale_image(images[0], raise_exceptions=False):
         is_gray = True
     else:

@@ -1,8 +1,8 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from .utils import check_rgb_image, show_images, check_grayscale_image
-from .exceptions import ImageNotGrayscaleError, ImageNotRGBError
+from .utils import check_three_channel_image, show_images, check_grayscale_image
+from .exceptions import ImageNotGrayscaleError, ImageNot3ChannelError
 
 
 def remap_image_intensity(
@@ -81,10 +81,17 @@ def change_saturation(
 ) -> np.ndarray:
     """Change the saturation of the image.
 
+    Change the saturation of an RGB image. The saturation is changed by changing the
+    saturation channel of the image in the HSV color space.
+
+    .. warning::
+        The image is expected to be in RGB format, but any other 3 channel image will
+        be accepted. This can cause unexpected results.
+
     Parameters
     ----------
     image : np.ndarray
-        The image to change the saturation of.
+        The image to change the saturation of, the image is expected to be in RGB format.
     delta : int
         The amount to change the saturation. Positive values increase the saturation,
         negative values decrease the saturation.
@@ -98,8 +105,8 @@ def change_saturation(
 
     Raises
     ------
-    ImageNotRGBError
-        If the image is not RGB.
+    ImageNot3ChannelError
+        If the image is not a 3 channel image.
     ValueError
         If the delta is not between -255 and 255.
     """
@@ -114,7 +121,7 @@ def change_saturation(
             "Image should be a numpy array not type {}".format(type(image))
         )
 
-    check_rgb_image(image, raise_exceptions=True)
+    check_three_channel_image(image, raise_exceptions=True)
 
     if -255 > delta > 255:
         raise ValueError("Delta must be between -255 and 255!")
@@ -148,10 +155,13 @@ def change_brightness(
 ) -> np.ndarray:
     """Change the brightness of the image.
 
+    Change the brightness of an RGB image. The brightness is changed by changing the
+    value channel of the image in the HSV color space.
+
     Parameters
     ----------
     image : np.ndarray
-        The image to change the brightness of.
+        The image to change the brightness of, the image is to be RGB format.
     delta : int
         The amount to change the brightness. Positive values increase the brightness,
         negative values decrease the brightness.
@@ -165,8 +175,8 @@ def change_brightness(
 
     Raises
     ------
-    ImageNotRGBError
-        If the image is not RGB.
+    ImageNot3ChannelError
+        If the image is not a 3 channel image.
     ValueError
         If the delta is not between -255 and 255.
     """
@@ -181,7 +191,7 @@ def change_brightness(
             "Image should be a numpy array not type {}".format(type(image))
         )
 
-    check_rgb_image(image, raise_exceptions=True)
+    check_three_channel_image(image, raise_exceptions=True)
 
     if -255 > delta > 255:
         raise ValueError("Delta must be between -255 and 255!")
@@ -242,10 +252,8 @@ def blur(image: np.ndarray, kernel_size: int, show_steps: bool = True) -> np.nda
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
 
-    # Create the kernel
+    # Create the kernel and convolve the image with the kernel
     kernel = np.ones((kernel_size, kernel_size)) / (kernel_size**2)
-
-    # Convolve the image with the kernel
     blurred_image = cv2.filter2D(image, -1, kernel)
 
     if show_steps:
@@ -301,8 +309,12 @@ def gaussian_blur(
     image = cv2.GaussianBlur(image, [kernel_size, kernel_size], sigma)
 
     if show_steps:
-        plt.imshow(image)
-        plt.title("Gaussian blur")
-        plt.show()
+        show_images(
+            {
+                "Original image": image,
+                "Blurred image": image,
+                "Difference between the two images": image - image,
+            }
+        )
 
     return image

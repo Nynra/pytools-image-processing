@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from typing import Tuple, List
 from .utils import (
-    check_rgb_image,
+    check_three_channel_image,
     show_images,
     check_binary_image,
     check_grayscale_image,
 )
-from .exceptions import ImageNotBinaryError, ImageNotGrayscaleError, ImageNotRGBError
+from .exceptions import ImageNotBinaryError, ImageNotGrayscaleError, ImageNot3ChannelError
 import copy
 
 
@@ -62,6 +62,13 @@ def plot_intensity_profile(image: np.ndarray, show_steps: bool=False) -> Tuple[n
 def get_rgb_histogram(img: np.ndarray, show_steps: bool = False) -> np.ndarray:
     """Create a histogram of the image for each color channel.
 
+    This function creates a histogram of the image for each color channel. This
+    can be used to find the distribution of the colors in the image.
+
+    .. attention::
+        The image is assumed to be in RGB format but any other 3 channel image
+        will be accepted as well. This can lead to unexpected results.
+
     Parameters
     ----------
     img : np.ndarray
@@ -76,8 +83,8 @@ def get_rgb_histogram(img: np.ndarray, show_steps: bool = False) -> np.ndarray:
 
     Raises
     ------
-    ImageNotRGBError
-        If the image is not an RGB image
+    ImageNot3ChannelError
+        If the image is not a 3 channel image.
     """
     if not isinstance(show_steps, bool):
         raise TypeError(
@@ -86,7 +93,7 @@ def get_rgb_histogram(img: np.ndarray, show_steps: bool = False) -> np.ndarray:
     if not isinstance(img, np.ndarray):
         raise TypeError("Image should be a numpy array not type {}".format(type(img)))
     # Check if th image is BGR or RGB
-    check_rgb_image(img, raise_exceptions=True)
+    check_three_channel_image(img, raise_exceptions=True)
 
     # Create a histogram for each channel
     r_hist = np.histogram(img[:, :, 0], bins=256, range=(0, 255))[0]
@@ -215,7 +222,7 @@ def find_components(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     # Check if the image is binary
-    check_binary_image(image, raise_exceptions=True)
+    check_binary_image(image, raise_exceptions=True, enforce_boolean=False)
 
     # Perform connected component analysis
     num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(
