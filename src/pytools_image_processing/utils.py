@@ -369,7 +369,7 @@ def get_bounding_rect(
     rect = cv2.minAreaRect(points)
     (x, y), (w, h), a = rect  # a - angle
     box = cv2.boxPoints(rect)
-    box = np.int0(box)  # turn into ints
+    box = np.int64(box)
     return box, (int(x), int(y), int(w), int(h), float(a - 90))
 
 
