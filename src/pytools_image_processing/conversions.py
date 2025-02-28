@@ -189,6 +189,30 @@ def bgr_to_rgb(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
     return rgb_image
 
 
+def invert_image(image: np.ndarray) -> np.ndarray:
+    """Invert the image.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The image to invert.
+
+    Returns
+    -------
+    np.ndarray
+        The inverted image.
+    """
+    if not isinstance(image, np.ndarray):
+        raise ValueError(
+            "image should be a numpy array not type {}".format(type(image))
+        )
+    
+    if len(image.shape) == 2:
+        return 255 - image
+    else:
+        return cv2.bitwise_not(image)
+
+
 def grayscale_to_fft_image(image: np.ndarray, show_steps: bool = True) -> Tuple[np.ndarray, np.ndarray, int, float]:
     """
     Converts the image to a fourrier transformed image.
