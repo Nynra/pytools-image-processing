@@ -1,9 +1,8 @@
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 from .utils import check_three_channel_image, show_images, check_grayscale_image
-from .exceptions import ImageNotGrayscaleError, ImageNot3ChannelError
 from typing import Tuple
+
 
 def remap_image_intensity(
     image: np.ndarray, range: tuple[int, int] = [0, 1], show_steps: bool = False
@@ -45,9 +44,7 @@ def remap_image_intensity(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     if not isinstance(image, np.ndarray):
-        raise TypeError(
-            "Image should be a numpy array not type {}".format(type(image))
-        )
+        raise TypeError("Image should be a numpy array not type {}".format(type(image)))
 
     # Only grayscale images can be remapped
     check_grayscale_image(image, raise_exceptions=True)
@@ -117,9 +114,7 @@ def change_saturation(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     if not isinstance(image, np.ndarray):
-        raise TypeError(
-            "Image should be a numpy array not type {}".format(type(image))
-        )
+        raise TypeError("Image should be a numpy array not type {}".format(type(image)))
 
     check_three_channel_image(image, raise_exceptions=True)
 
@@ -187,9 +182,7 @@ def change_brightness(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     if not isinstance(image, np.ndarray):
-        raise TypeError(
-            "Image should be a numpy array not type {}".format(type(image))
-        )
+        raise TypeError("Image should be a numpy array not type {}".format(type(image)))
 
     check_three_channel_image(image, raise_exceptions=True)
 
@@ -240,9 +233,7 @@ def blur(image: np.ndarray, kernel_size: int, show_steps: bool = True) -> np.nda
         The blurred image.
     """
     if not isinstance(image, np.ndarray):
-        raise TypeError(
-            "Image should be a numpy array not type {}".format(type(image))
-        )
+        raise TypeError("Image should be a numpy array not type {}".format(type(image)))
     if not isinstance(kernel_size, int):
         raise TypeError(
             "kernel_size should be an integer not type {}".format(type(kernel_size))
@@ -320,7 +311,6 @@ def gaussian_blur(
     return image
 
 
-
 def rotate_image(
     image: np.ndarray,
     angle: float,
@@ -383,7 +373,7 @@ def rotate_image(
         raise TypeError(
             "Show_steps must be a boolean, not type {}.".format(type(show_steps))
         )
-    
+
     # Check if we have to do anything
     if abs(angle) in (0, 180, 360):
         # Nothing to do here

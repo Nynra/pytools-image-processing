@@ -2,8 +2,11 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-from typing import Tuple
-from .exceptions import ImageNotBinaryError, ImageNotGrayscaleError, ImageNot3ChannelError
+from .exceptions import (
+    ImageNotBinaryError,
+    ImageNotGrayscaleError,
+    ImageNot3ChannelError,
+)
 
 
 def show_images(images: dict[str, np.ndarray], show_axis: bool = True) -> ...:
@@ -104,7 +107,9 @@ def check_three_channel_image(img: np.ndarray, raise_exceptions: bool = True) ->
     return False
 
 
-def check_grayscale_image(img: np.ndarray, raise_exceptions: bool = True, enforce_not_boolean:bool=True) -> bool:
+def check_grayscale_image(
+    img: np.ndarray, raise_exceptions: bool = True, enforce_not_boolean: bool = True
+) -> bool:
     """Check if the image is a grayscale image.
 
     Parameters
@@ -156,7 +161,9 @@ def check_grayscale_image(img: np.ndarray, raise_exceptions: bool = True, enforc
         return False
 
 
-def check_binary_image(img: np.ndarray, raise_exceptions: bool = True, enforce_boolean:bool=True) -> bool:
+def check_binary_image(
+    img: np.ndarray, raise_exceptions: bool = True, enforce_boolean: bool = True
+) -> bool:
     """Check if the image is a binary image.
 
     Parameters
@@ -335,4 +342,3 @@ def save_image(
     if in_file_dir:
         filename = os.path.join(os.path.dirname(__file__), filename)
     cv2.imwrite(filename, image)
-

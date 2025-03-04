@@ -1,8 +1,7 @@
 import cv2
 import numpy as np
-import os
 from typing import List
-from .utils import show_images, check_three_channel_image, check_grayscale_image, check_binary_image
+from .utils import show_images, check_grayscale_image, check_binary_image
 
 
 def stack_keypoint_matching(
@@ -167,7 +166,7 @@ def stack_ECC(images: List[np.ndarray], show_steps: bool = False) -> np.ndarray:
                 M,
                 cv2.MOTION_HOMOGRAPHY,
             )
-            dims = image.shape # Might give errors
+            dims = image.shape  # Might give errors
             w, h = dims[0], dims[1]
             # Align image to first image
             image = cv2.warpPerspective(image, M, (h, w))

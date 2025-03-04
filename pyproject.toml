@@ -1,25 +1,17 @@
 [project]
 name = "pytools_image_processing"
-version = "0.1.1"
-authors = [
-    { name="Bas Klein Ikkink", email="basklikk@pm.me" },
-]
+version = "0.2.1"
+authors = [{ name = "Bas Klein Ikkink", email = "basklikk@pm.me" }]
 description = "Some usefull functions for image processing and analysis."
-readme = {file = "README.txt", content-type = "text/markdown"}
+readme = { file = "README.txt", content-type = "text/markdown" }
 requires-python = ">=3.12"
-dependencies = [
-    "opencv-python",
-    "scikit-image",
-    "matplotlib",
-    "scipy",
-    "numpy",
-]
+dependencies = ["matplotlib", "numpy", "opencv-python", "scipy"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
     "License :: MIT License",
 ]
-license = {text = "MIT License"}
+license = { text = "MIT License" }
 
 [project.urls]
 Homepage = "https://github.com/Nynra/pytools_image_processing"
@@ -28,4 +20,3 @@ Issues = "https://github.com/Nynra/pytools_image_processing/issues"
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
-
