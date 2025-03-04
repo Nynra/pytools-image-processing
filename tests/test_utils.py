@@ -5,10 +5,6 @@ from pytools_image_processing.utils import (
     check_grayscale_image,
     check_binary_image,
     load_image,
-    get_bounding_rect,
-    rotate_image,
-    rotated_rect_with_max_area,
-    crop_image,
 )
 from pytools_image_processing.exceptions import (
     ImageNotGrayscaleError,
@@ -18,6 +14,10 @@ from pytools_image_processing.exceptions import (
 import numpy as np
 import cv2
 import os
+
+#     rotate_image,
+# rotated_rect_with_max_area,
+# crop_image,
 
 
 class TestShowImages(TestCase):
@@ -102,7 +102,7 @@ class TestCheckGrayscaleImage(TestCase):
             check_grayscale_image(
                 img=np.random.randint(0, 255, (100, 100)).astype(np.uint8),
                 raise_exceptions=False,
-                enforce_not_boolean=False
+                enforce_not_boolean=False,
             )
         )
 
@@ -146,12 +146,12 @@ class TestCheckBinaryImage(TestCase):
                 img=np.random.randint(0, 255, (100, 100)).astype(np.uint8),
                 raise_exceptions=True,
             )
-        
+
         self.assertTrue(
             check_binary_image(
                 img=np.random.randint(0, 2, (100, 100)).astype(np.bool),
                 raise_exceptions=False,
-                enforce_boolean=False
+                enforce_boolean=False,
             )
         )
 
@@ -223,24 +223,10 @@ class TestLoadImage(TestCase):
             load_image("non_existing_image.png", mode="RGB")
 
 
-class TestGetBoundingRect(TestCase):
-
-    def test_get_bounding_rect(self):
-        """Test if the function returns the correct bounding rectangle."""
-        self.fail("Not implemented yet.")
-
-
 class TestRotateImage(TestCase):
-    
+
     def test_rotate_image(self):
         """Test if the function rotates the image correctly."""
-        self.fail("Not implemented yet.")
-
-
-class TestRotatedRectWithMaxArea(TestCase):
-
-    def test_rotated_rect_with_max_area(self):
-        """Test if the function returns the correct rotated rectangle."""
         self.fail("Not implemented yet.")
 
 
