@@ -1,12 +1,9 @@
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 from typing import Tuple
 from scipy import fftpack
 from scipy.signal import find_peaks
-from matplotlib.colors import LogNorm
 from .utils import check_three_channel_image, show_images, check_grayscale_image
-from .exceptions import ImageNotGrayscaleError, ImageNot3ChannelError
 
 
 def bgr_to_grayscale(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
@@ -23,7 +20,7 @@ def bgr_to_grayscale(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
         The image to convert to a grayscale image.
     show_steps : bool, optional
         If True, show the steps of the conversion. The default is True.
-    
+
     Returns
     -------
     np.ndarray
@@ -39,18 +36,13 @@ def bgr_to_grayscale(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     if not isinstance(image, np.ndarray):
-        raise TypeError(
-            "Image should be a numpy array not type {}".format(type(image))
-        )
+        raise TypeError("Image should be a numpy array not type {}".format(type(image)))
 
     check_three_channel_image(image, raise_exceptions=True)
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     if show_steps:
-        show_images({
-            "Original image": image,
-            "Grayscale image": gray_image
-        })
+        show_images({"Original image": image, "Grayscale image": gray_image})
 
     return gray_image
 
@@ -69,12 +61,12 @@ def bgr_to_hsv(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
         The image to convert to an HSV image.
     show_steps : bool, optional
         If True, show the steps of the conversion. The default is True.
-    
+
     Returns
     -------
     np.ndarray
         The HSV image.
-    
+
     Raises
     ------
     ImageNot3ChannelError
@@ -85,25 +77,20 @@ def bgr_to_hsv(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     if not isinstance(image, np.ndarray):
-        raise TypeError(
-            "Image should be a numpy array not type {}".format(type(image))
-        )
+        raise TypeError("Image should be a numpy array not type {}".format(type(image)))
 
     check_three_channel_image(image, raise_exceptions=True)
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     if show_steps:
-        show_images({
-            "Original image": image,
-            "HSV image": hsv_image
-        })
+        show_images({"Original image": image, "HSV image": hsv_image})
 
     return hsv_image
 
 
 def hsv_to_bgr(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
     """Coverts an HSV image to a BGR image.
-    
+
     .. attention::
         The image is assumed to be in HSV format but any other 3 channel image
         will be accepted as well. This can lead to unexpected results
@@ -119,7 +106,7 @@ def hsv_to_bgr(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
     -------
     np.ndarray
         The BGR image.
-    
+
     Raises
     ------
     ImageNot3ChannelError
@@ -130,18 +117,13 @@ def hsv_to_bgr(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     if not isinstance(image, np.ndarray):
-        raise TypeError(
-            "Image should be a numpy array not type {}".format(type(image))
-        )
+        raise TypeError("Image should be a numpy array not type {}".format(type(image)))
 
     check_three_channel_image(image, raise_exceptions=True)
     bgr_image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
 
     if show_steps:
-        show_images({
-            "Original image": image,
-            "BGR image": bgr_image
-        })
+        show_images({"Original image": image, "BGR image": bgr_image})
 
     return bgr_image
 
@@ -173,23 +155,44 @@ def bgr_to_rgb(image: np.ndarray, show_steps: bool = True) -> np.ndarray:
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     if not isinstance(image, np.ndarray):
-        raise TypeError(
-            "Image should be a numpy array not type {}".format(type(image))
-        )
+        raise TypeError("Image should be a numpy array not type {}".format(type(image)))
 
     check_three_channel_image(image, raise_exceptions=True)
     rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     if show_steps:
-        show_images({
-            "Original image": image,
-            "RGB image": rgb_image
-        })
+        show_images({"Original image": image, "RGB image": rgb_image})
 
     return rgb_image
 
 
-def grayscale_to_fft_image(image: np.ndarray, show_steps: bool = True) -> Tuple[np.ndarray, np.ndarray, int, float]:
+def invert_image(image: np.ndarray) -> np.ndarray:
+    """Invert the image.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        The image to invert.
+
+    Returns
+    -------
+    np.ndarray
+        The inverted image.
+    """
+    if not isinstance(image, np.ndarray):
+        raise ValueError(
+            "image should be a numpy array not type {}".format(type(image))
+        )
+
+    if len(image.shape) == 2:
+        return 255 - image
+    else:
+        return cv2.bitwise_not(image)
+
+
+def grayscale_to_fft_image(
+    image: np.ndarray, show_steps: bool = True
+) -> Tuple[np.ndarray, np.ndarray, int, float]:
     """
     Converts the image to a fourrier transformed image.
 
@@ -209,7 +212,7 @@ def grayscale_to_fft_image(image: np.ndarray, show_steps: bool = True) -> Tuple[
     Returns
     -------
     Tuple[np.ndarray, np.ndarray, int, float]
-        A tuple containing the fourrier transformed image, the 1D spectrum, the dominant 
+        A tuple containing the fourrier transformed image, the 1D spectrum, the dominant
         frequency and the angle of the dominant frequency.
 
     Raises
@@ -217,17 +220,17 @@ def grayscale_to_fft_image(image: np.ndarray, show_steps: bool = True) -> Tuple[
     ImageNotGrayscaleError
         If the image is not a grayscale
     """
-    raise NotImplementedError("This function is broken and will be fixed somewhere in the future")
+    raise NotImplementedError(
+        "This function is broken and will be fixed somewhere in the future"
+    )
 
     if not isinstance(show_steps, bool):
         raise TypeError(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
     if not isinstance(image, np.ndarray):
-        raise TypeError(
-            "Image should be a numpy array not type {}".format(type(image))
-        )
-    
+        raise TypeError("Image should be a numpy array not type {}".format(type(image)))
+
     check_grayscale_image(image, raise_exceptions=True)
 
     # Calculate the x and y component fft
@@ -254,9 +257,6 @@ def grayscale_to_fft_image(image: np.ndarray, show_steps: bool = True) -> Tuple[
         print(f"Angle: {angle} rad")
         print(f"Angle: {np.degrees(angle)} deg")
         print(f"Wavenumber: {wavenumber} 1/px")
-        show_images({
-            "Original image": image,
-            "Fourrier transformed image": fft_img
-        })
+        show_images({"Original image": image, "Fourrier transformed image": fft_img})
 
     return fft_img, fft1d, wavenumber, angle
