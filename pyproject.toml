@@ -1,10 +1,10 @@
 [project]
 name = "pytools_image_processing"
-version = "0.2.1"
+version = "0.2.2"
 authors = [{ name = "Bas Klein Ikkink", email = "basklikk@pm.me" }]
 description = "Some usefull functions for image processing and analysis."
 readme = { file = "README.txt", content-type = "text/markdown" }
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 dependencies = ["matplotlib", "numpy", "opencv-python", "scipy"]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -14,8 +14,8 @@ classifiers = [
 license = { text = "MIT License" }
 
 [project.urls]
-Homepage = "https://github.com/Nynra/pytools_image_processing"
-Issues = "https://github.com/Nynra/pytools_image_processing/issues"
+Homepage = "https://github.com/Nynra/pytools-image-processing"
+Issues = "https://github.com/Nynra/pytools-image-processing/issues"
 
 [build-system]
 requires = ["setuptools>=61.0"]
