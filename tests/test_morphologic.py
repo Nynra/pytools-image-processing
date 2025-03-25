@@ -4,7 +4,7 @@ from pytools_image_processing.morphologic import (
     normalize_image,
     change_brightness,
     change_saturation,
-    blur,
+    average_blur,
     gaussian_blur,
 )
 import numpy as np
@@ -37,6 +37,7 @@ class TestChangeBrightness(TestCase):
         test_rgb_image = np.random.randint(0, 255, (100, 100, 3)).astype(np.uint8)
         change_brightness(image=test_rgb_image, delta=10, show_steps=False)
 
+
 class TestChangeSaturation(TestCase):
     """Test the change_saturation function."""
 
@@ -46,13 +47,13 @@ class TestChangeSaturation(TestCase):
         change_saturation(image=test_image, delta=10, show_steps=False)
 
 
-class TestBlur(TestCase):
+class TestAverageBlur(TestCase):
     """Test the blur function."""
 
     def test_runs_without_errors(self):
         """Test if the function runs without errors."""
         test_image = np.random.randint(0, 255, (100, 100)).astype(np.uint8)
-        blur(image=test_image, kernel_size=3, show_steps=False)
+        average_blur(image=test_image, kernel_size=3, show_steps=False)
 
 
 class TestGaussianBlur(TestCase):
