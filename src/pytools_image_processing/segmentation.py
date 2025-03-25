@@ -6,6 +6,7 @@ from .utils import (
     check_grayscale_image,
 )
 from .morphologic import normalize_image
+from .conversions import invert_image
 from .utils import show_images
 
 
@@ -42,6 +43,7 @@ def get_bounding_rect(
     (x, y), (w, h), a = rect  # a - angle
     box = cv2.boxPoints(rect)
     box = np.int64(box)
+
     return box, (int(x), int(y), int(w), int(h), float(a - 90))
 
 
@@ -190,8 +192,10 @@ def separate_objects(
     image: np.ndarray,
     normalize: bool = True,
     mask_range: tuple[float] = (0.05, 0.8),
-    invert_image: bool = False,
+    invert_input: bool = False,
     dilate_iterations: int = 30,
+    op_kernel_size: int = 9,
+    gaus_blur: bool = True,
     show_steps: bool = False,
 ) -> tuple[list[np.ndarray], list[float]]:
     """
@@ -219,19 +223,21 @@ def separate_objects(
         The grayscale image.
     normalize : bool, optional
         If True, normalize the intensity of the image. The default is True.
-    correct_rotation : bool, optional
-        If True, correct the rotation of the image. The default is True.
     mask_range : tuple[float], optional
         The range of the mask size in percentage of the image size.
         The default is (0.05, 0.5) meaning the mask should be between
         5% and 50% of the image size.
-    invert_image : bool, optional
+    invert_input : bool, optional
         If True, invert the image. The default is False. This is useful
         when the lines are lower than the substrate.
     dilate_iterations : int, optional
         The number of iterations to dilate the mask. The default is 30.
         The mask is dilated to make sure the whole object is included in the
         cropped image.
+    op_kernel_size: int, optional
+        The size of the used kernel in the differnt operations
+    gaus_blur: bool, optional
+        Wether or not to use gausian blurring
     show_steps : bool, optional
         If True, show the steps of the conversion. The default is False.
 
@@ -252,6 +258,22 @@ def separate_objects(
     if not isinstance(normalize, bool):
         raise ValueError(
             "normalize should be a boolean not type {}".format(type(normalize))
+        )
+    if not isinstance(invert_input, bool):
+        raise ValueError(
+            "invert_input should be a boolean not type {}".format(type(invert_image))
+        )
+    if not isinstance(op_kernel_size, int):
+        raise ValueError(
+            "op_kernel_size should be an int not type {}".format(type(op_kernel_size))
+        )
+    if not isinstance(gaus_blur, bool):
+        raise ValueError(
+            "gaus_blur should be a boolean not type {}".format(type(gaus_blur))
+        )
+    if op_kernel_size % 2 == 0:
+        raise ValueError(
+            "op_kernel_size should be an odd number not {}".format(op_kernel_size)
         )
     if not isinstance(mask_range, (tuple, list)):
         raise ValueError(
@@ -287,6 +309,9 @@ def separate_objects(
             "show_steps should be a boolean not type {}".format(type(show_steps))
         )
 
+    # Invert the image if needed
+    if invert_input:
+        image = invert_image(image)
     # Normalize the image to increase the contrast
     if normalize:
         norm_image = normalize_image(image)
@@ -294,7 +319,8 @@ def separate_objects(
         norm_image = image
 
     # Remove some noise and use a threshold to get the line positions
-    norm_image = cv2.GaussianBlur(norm_image, (3, 3), 0)
+    if gaus_blur:
+        norm_image = cv2.GaussianBlur(norm_image, (op_kernel_size, op_kernel_size), 0)
     _, mask = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
     # To find the contours we need to define a minimum and maximum size
@@ -320,7 +346,9 @@ def separate_objects(
     for component in components:
         # Dilate the mask a bit to make sure we get the whole object
         dil_component = cv2.dilate(
-            component, np.ones((3, 3), np.uint8), iterations=dilate_iterations
+            component,
+            np.ones((op_kernel_size, op_kernel_size), np.uint8),
+            iterations=dilate_iterations,
         )
         coords = get_bounding_rect(dil_component)
         angles.append(coords[-1])
@@ -336,7 +364,10 @@ def separate_objects(
 
 
 def mark_objects(
-    image: np.ndarray, masks: list[np.ndarray], start_id: int, show_steps: bool = False
+    image: np.ndarray,
+    masks: list[np.ndarray],
+    start_id: int = 1,
+    show_steps: bool = False,
 ) -> tuple[np.ndarray, list[np.ndarray]]:
     """Mark the objects to keep track of them.
 
@@ -422,6 +453,15 @@ def mark_objects(
         show_images(images)
 
     return marked_image, ids
+
+
+def rotate_image(
+    image: np.ndarray,
+    angle: float,
+    show_steps: bool = False,
+    crop_blackspace: bool = True,
+) -> np.ndarray:
+    """Rotate the image."""
 
 
 def get_object(
