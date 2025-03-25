@@ -213,7 +213,9 @@ def change_brightness(
     return rgb
 
 
-def blur(image: np.ndarray, kernel_size: int, show_steps: bool = True) -> np.ndarray:
+def average_blur(
+    image: np.ndarray, kernel_size: int, show_steps: bool = True
+) -> np.ndarray:
     """Blurs the image.
 
     The blurring is done using a simple average kernel.

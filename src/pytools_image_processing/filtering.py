@@ -239,3 +239,45 @@ def hsv_color_filter(
     if show_steps:
         show_images({"Original image": image, "Filtered image": filtered})
     return filtered
+
+
+def filter_lowpass(self, fft_radius, inline=True):
+    """
+    Execute a lowpass filter on the data
+    """
+    F = self.get_fft()
+    mask = self.get_radius_mask_from_center(radius=fft_radius)
+    if inline:
+        self.pixels = np.real(np.fft.ifft2(np.fft.fftshift(F * mask)))
+    else:
+        C = copy.deepcopy(self)
+        C.pixels = np.real(np.fft.ifft2(np.fft.fftshift(F * mask)))
+        return C
+
+
+def filter_gaussian(self, sigma, inline=True, **kwargs):
+    """
+    Execute a gaussian filter on the data
+    """
+    if inline:
+        self.pixels = scipy.ndimage.gaussian_filter(self.pixels, sigma=sigma, **kwargs)
+    else:
+        C = copy.deepcopy(self)
+        C.pixels = scipy.ndimage.gaussian_filter(C.pixels, sigma=sigma, **kwargs)
+        return C
+
+
+def filter_percentile(self, percentile, size, inline=True, **kwargs):
+    """
+    Execute a percentile filter on the data
+    """
+    if inline:
+        self.pixels = scipy.ndimage.percentile_filter(
+            self.pixels, percentile=percentile, size=size, **kwargs
+        )
+    else:
+        C = copy.deepcopy(self)
+        C.pixels = scipy.ndimage.percentile_filter(
+            C.pixels, percentile=percentile, size=size, **kwargs
+        )
+        return C
